@@ -15,6 +15,7 @@ class Duplication:
     df_pcr : dataframe of pcr test 
     confidence : threshold similarity for the similarity between two values
     threshold : pourcentage of identical values to compute a observation to duplicate
+    metric : function to compare string (default is Jaro Winkler similarity)
     """
     
     def __init__(self, var_threshold: list,
@@ -22,7 +23,7 @@ class Duplication:
                  variable_testing: list,
                  df_pcr: pd.DataFrame,
                  confidence=0.9, threshold=0.7,
-                 metric=None):
+                 metric=None, remove_dupli_pi=True):
 
         self.var_threshold = var_threshold
         self.var_similarity = var_similarity
@@ -30,11 +31,13 @@ class Duplication:
         self.threshold = threshold
         self.variable_testing = variable_testing
         self.df_pcr = df_pcr
+        self.remove_dupli_pi = remove_dupli_pi  
         
         if metric == None:
             self.metric = jaro_winkler_similarity
         else :
             self.metric = metric
+
 
     def detect_duplicates(self, df_patient):
         df_patient_init = df_patient.copy()
@@ -47,6 +50,10 @@ class Duplication:
                 df_patient, self.df_pcr, variable, all_unique)
             
             df_patient = self.__df_deduplicate__(df_patient, list_dupli, variable)
+
+        if self.remove_dupli_pi:
+            index_dupli_pi = df_patient[df_patient.patient_id.duplicated(False)].index
+            df_patient = self.__df_deduplicate__(df_patient, index_dupli_pi, 'patient_id')
 
         self.removed = round(
             1 - (df_patient.shape[0] / df_patient_init.shape[0]), 2)
@@ -86,8 +93,9 @@ class Duplication:
             else:
                 is_positive = self.__find_positive__(index_tested, df_pcr, df_patient)
                 if any(is_positive):
-                    ref_index = self.__get_positive__(df_patient, df_pcr, is_positive)
-                else: 
+                    index_positive = self.__get_positive__(df_patient, df_pcr, is_positive)
+                    ref_index = index_positive[np.isin(index_positive, index_tested)][0]
+                else:
                     ref_index = index_tested[0]
         else:
             ref_index = is_tested.index[0]
@@ -107,8 +115,8 @@ class Duplication:
                         var_identical[var] = self.metric(cluster.loc[line, var],
                                                     cluster.loc[ref_index, var]) > self.confidence
                     else:
-                        var_identical[var] = cluster.loc[line,
-                                                         var] == cluster.loc[ref_index, var]
+                        var_identical[var] = cluster.loc[line, var] == cluster.loc[
+                        ref_index, var]
 
                 matching.append(var_identical)
 
@@ -129,10 +137,10 @@ class Duplication:
             df_patient.loc[index_tested].patient_id)].pcr == "P"
         return is_positive
 
-    def __get_positive__(df_patient, df_pcr, is_positive):
+    def __get_positive__(self, df_patient, df_pcr, is_positive):
         return df_patient[
         df_patient.patient_id.isin(
-            df_pcr.patient_id[is_positive.index[is_positive]])].index[0]
+            df_pcr.patient_id[is_positive.index[is_positive]])].index
 
 
 def prepare_df(df_patient):
@@ -145,8 +153,9 @@ def prepare_df(df_patient):
     df_patient = df_patient.fillna('')
     
     # born and age
-    df_patient["born_age"] = df_patient.apply(lambda x: str(x["date_of_birth"]).replace('.0', '').replace('nan','')
-                 + " " + str(x["age"]).replace('.0','').replace('nan',''), axis=1)
+    df_patient["born_age"] = df_patient.apply(lambda x: str(
+        x["date_of_birth"]).replace('.0', '').replace('nan','') 
+    + " " + str(x["age"]).replace('.0','').replace('nan',''), axis=1)
     
     # localisation (postcode, suburb and state)
     df_patient.street_number = df_patient.street_number.replace(
