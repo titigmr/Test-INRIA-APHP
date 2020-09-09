@@ -28,7 +28,7 @@ def calculate_age(date:pd.Series, year:int):
     return year - date
 
 
-def gestalt_pattern_matching(a, b):
+def gestalt_pattern_matching(a: str, b: str):
     """
     Find similarity between two string 
     using the gestalt pattern matching algorithm.
@@ -36,7 +36,7 @@ def gestalt_pattern_matching(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
-def find_best_similar_levenstein(serie, dict_ref):
+def find_best_similar_levenstein(serie: pd.Series, dict_ref: dict):
     """
     Find the most similar value, with the levenstein distance, between values 
     in a pandas serie and a dictionary values. 
@@ -54,7 +54,7 @@ def find_best_similar_levenstein(serie, dict_ref):
     
     return closest_value
 
-def find_best_similar(serie, dict_ref, similarity, apply=True):
+def find_best_similar(serie: pd.Series, dict_ref: dict, similarity, apply=True):
     """
     Find for each value on a pandas serie the most similar string from a dictionary referential. 
     This function use a function similarity (jaro-winkler, gestalt pattern matching for example).
@@ -89,23 +89,23 @@ def find_best_similar(serie, dict_ref, similarity, apply=True):
 
 
 
-def postcode_coherence(serie, ref_postcode, str_postcode):
+def postcode_coherence(serie: pd.Series, ref_postcode: dict, str_postcode: list):
     """
     Find the state attributed for each value in a pandas serie.
     This function use a dictonary where keys is the state, and value is a numpy 
     array with all postcode in this state. The variable str_postcode is the list 
     of value where postcode is not integers.
     """
-    def convert_postcode_toint(serie:pd.Series, str_postcode):
+    def convert_postcode_toint(serie: pd.Series, str_postcode: list):
         serie.replace({i:None for i in str_postcode}, inplace=True)
         serie.fillna(0, inplace=True)
         serie = serie.astype(int)
         return serie
 
-    def attribute_state(x, ref_postcode):
-    for key, value in ref_postcode.items():
-        if x in value:
-            return key
+    def attribute_state(x, ref_postcode: dict):
+        for key, value in ref_postcode.items():
+            if x in value:
+                return key
 
     new_serie = convert_postcode_toint(serie, str_postcode)
 
@@ -114,7 +114,7 @@ def postcode_coherence(serie, ref_postcode, str_postcode):
     return post_code_serie
 
 
-def correct_typo(serie, confidence=90, threshold=10):
+def correct_typo(serie: pd.Series, confidence=90, threshold=10):
     """
     Correct typographie errors between values find more than the threshold and 
     unique values in a pandas serie. The confidence is the ratio of similarity used by 
@@ -130,4 +130,18 @@ def correct_typo(serie, confidence=90, threshold=10):
             typo_corrected[i] = b_extract[0]
             
     return typo_corrected
+
+
+def apply_coherence(dataframe: pd.DataFrame, table="patient"):
+    """
+    Clean dataframe
+    """
+    if table == 'patient':
+        pass
+
+    elif table == 'pcr':
+        dataframe.pcr = dataframe.pcr.replace(
+            {'Negative': 'N', 'Positive': 'P'})
+
+        return dataframe
 

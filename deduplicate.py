@@ -143,7 +143,7 @@ class Duplication:
             df_pcr.patient_id[is_positive.index[is_positive]])].index
 
 
-def prepare_df(df_patient):
+def prepare_patient(df_patient):
     """
     Prepare variables of the dataset for the deduplicate function 
     (localisation, full_address, full_name and born_age variables).
@@ -170,3 +170,14 @@ def prepare_df(df_patient):
     df_patient["full_name"] = df_patient["surname"] + " " + df_patient["given_name"]
     
     return df_patient
+
+
+
+def prepare_pcr(df_pcr, positive_pi, not_dupli_pcr):
+    """
+    Deduplicate pcr table
+    """
+    keep = pd.concat([positive_pi, not_dupli_pcr])
+    df_pcr = df_pcr.drop_duplicates(keep=False, subset=["patient_id"])
+    df_pcr = pd.concat([df_pcr, keep])
+    return df_pcr
