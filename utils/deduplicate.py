@@ -145,8 +145,8 @@ class Duplication:
 
 def prepare_patient(df_patient):
     """
-    Prepare variables of the dataset for the deduplicate function 
-    (localisation, full_address, full_name and born_age variables).
+    Prepare dataframe patient : create variable
+    localisation, full_address, full_name and born_age.
 
     """
 

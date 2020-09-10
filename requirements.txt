@@ -1,0 +1,6 @@
+genderize
+pandas==0.25.3 
+numpy==1.17.2 
+jellyfish==0.8.2  
+fuzzywuzzy==0.18.0
+python-levenshtein==0.12.0

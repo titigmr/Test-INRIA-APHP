@@ -1,4 +1,7 @@
 import numpy as np
+from genderize import Genderize, GenderizeException
+import json
+import os
 
 def get_postcode():
     """
@@ -43,3 +46,26 @@ def get_states():
             "Victoria": "VIC",
             "Northern Territory":"NT",
             "Australian Capital Territory":"ACT"}
+
+
+
+def get_gender(unique_name):
+    """
+    Request genderize api to get the gender for each given name in a list.
+    If maximum requests is done, return the last data stored.
+    """
+    try :
+        get_gender = Genderize().get(unique_name)
+        f = open("gender.json", "w") 
+        json.dump(get_gender, f)
+        f.close()
+        return get_gender
+
+    except GenderizeException:
+        print("Request limit")
+        if os.path.exists("gender.json"):
+            with open('gender.json') as data_file:
+                data_loaded = json.load(data_file)
+            return data_loaded
+
+
