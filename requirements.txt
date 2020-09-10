@@ -1,4 +1,4 @@
-genderize
+genderize==0.3.1
 pandas==0.25.3 
 numpy==1.17.2 
 jellyfish==0.8.2  
