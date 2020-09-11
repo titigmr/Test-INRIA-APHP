@@ -2,18 +2,18 @@ import pandas as pd
 import numpy as np
 from difflib import SequenceMatcher
 from fuzzywuzzy import process
+from typing import Callable
 
 def convert_to_date(value):
     """
     Convert a float value to a datetime format. 
     If the date isn't convertible, return the date in string.
     """
-    
     if not(np.isnan(value)):
         str_date = str(int(value))
         try :
             return pd.to_datetime(str_date, format='%Y%m%d')
-        except : 
+        except (TypeError, ValueError) : 
             return str_date
 
 
@@ -46,6 +46,7 @@ def find_best_similar_levenstein(serie: pd.Series, dict_ref: dict):
     closest_value = {}
 
     all_values = set(serie.values)
+
     all_values.remove(None)
 
     for i in all_values:
@@ -54,7 +55,7 @@ def find_best_similar_levenstein(serie: pd.Series, dict_ref: dict):
     
     return closest_value
 
-def find_best_similar(serie: pd.Series, dict_ref: dict, similarity, apply=True):
+def find_best_similar(serie: pd.Series, dict_ref: dict, similarity: Callable, applying=True):
     """
     Find for each value on a pandas serie the most similar string from a dictionary referential. 
     This function use a function similarity (jaro-winkler, gestalt pattern matching for example).
@@ -82,7 +83,7 @@ def find_best_similar(serie: pd.Series, dict_ref: dict, similarity, apply=True):
 
         closest_value[data] = value_close
     
-    if apply:
+    if applying:
         return serie.replace(closest_value)
     else:
         return closest_value
@@ -118,7 +119,7 @@ def correct_typo(serie: pd.Series, confidence=90, threshold=10):
     """
     Correct typographie errors between values find more than the threshold and 
     unique values in a pandas serie. The confidence is the ratio of similarity used by 
-    the algortjm of matching (levenshtein distance).
+    the algorithm of matching (levenshtein distance).
     """
     typo_corrected = {}
     indice_lonely = serie.value_counts()[serie.value_counts() == 1].index
@@ -132,7 +133,7 @@ def correct_typo(serie: pd.Series, confidence=90, threshold=10):
     return typo_corrected
 
 
-def apply_coherence(dataframe: pd.DataFrame, table="patient"):
+def apply_coherence(dataframe: pd.DataFrame, table="patient", arguments=None):
     """
     Clean dataframe
     """
