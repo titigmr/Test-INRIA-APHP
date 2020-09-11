@@ -2,6 +2,7 @@ import numpy as np
 from genderize import Genderize, GenderizeException
 import json
 import os
+import geopandas as gpd
 
 def get_postcode():
     """
@@ -68,4 +69,10 @@ def get_gender(unique_name):
                 data_loaded = json.load(data_file)
             return data_loaded
 
-
+def get_map(dict_ref):
+    fp = os.path.join('map','australian-states.json')
+    map_df = gpd.read_file(fp)
+    map_df["state"] = map_df.STATE_NAME.replace(dict_ref)
+    map_df = map_df.set_index("state")
+    map_df["STATE_CODE"] = map_df.index
+    return map_df

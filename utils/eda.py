@@ -72,3 +72,37 @@ def find_truth_age(age_re, age_es):
         f_age = None
     
     return f_age
+
+
+
+def plot_map(data, var, cmap='Blues', size_fig=(14, 8), 
+             vminmax=(10, 3000), title='', anno_state=True, 
+             anno_value=True, color_font='black'):
+    """
+    Plot map with a geodataframe and one column with values computed for each state.
+    """
+
+    fig, ax = plt.subplots(figsize=size_fig)
+    data.plot(var,
+              cmap=cmap,
+              linewidth=0.8, edgecolor='0.8', ax=ax)
+    sm = plt.cm.ScalarMappable(cmap=cmap,
+                               norm=plt.Normalize(vmin=vminmax[0], vmax=vminmax[1]))
+    cbar = fig.colorbar(sm)
+    
+    ax.annotate('Source Map: Commonwealth of Australia',
+                xy=(0.1, .08), xycoords='figure fraction',
+                horizontalalignment='left', verticalalignment='top',
+                fontsize=10, color='#555555')
+    
+    if anno_state:
+        data.apply(lambda x: ax.annotate(s=x.STATE_CODE,
+                                         xy=x.geometry.centroid.coords[0],
+                                         ha='center', size=10, fontweight='bold', color=color_font), axis=1)
+    if anno_value:
+        data.apply(lambda x: ax.annotate(s=str(x[var]),
+                                         xy=(x.geometry.centroid.coords[0][0],
+                                             x.geometry.centroid.coords[0][1]-2),
+                                         ha='center', size=10, color=color_font), axis=1)
+    ax.axis('off')
+    ax.set_title(title)
