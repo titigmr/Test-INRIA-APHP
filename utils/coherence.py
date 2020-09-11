@@ -90,7 +90,7 @@ def find_best_similar(serie: pd.Series, dict_ref: dict, similarity: Callable, ap
 
 
 
-def postcode_coherence(serie: pd.Series, ref_postcode: dict, str_postcode: list):
+def postcode_coherence(serie: pd.Series, ref_postcode: dict, str_postcode=list(), convert=True):
     """
     Find the state attributed for each value in a pandas serie.
     This function use a dictonary where keys is the state, and value is a numpy 
@@ -108,7 +108,10 @@ def postcode_coherence(serie: pd.Series, ref_postcode: dict, str_postcode: list)
             if x in value:
                 return key
 
-    new_serie = convert_postcode_toint(serie, str_postcode)
+    if convert:
+        new_serie = convert_postcode_toint(serie, str_postcode)
+    else :
+        new_serie = serie
 
     post_code_serie = new_serie.apply(
         attribute_state, ref_postcode=ref_postcode)
@@ -133,7 +136,7 @@ def correct_typo(serie: pd.Series, confidence=90, threshold=10):
     return typo_corrected
 
 
-def apply_coherence(dataframe: pd.DataFrame, table="patient", arguments=None):
+def apply_coherence(dataframe: pd.DataFrame, table="patient"):
     """
     Clean dataframe
     """

@@ -5,3 +5,5 @@ jellyfish==0.8.2
 fuzzywuzzy==0.18.0
 python-levenshtein==0.12.0
 matplotlib
+descartes
+geopandas
