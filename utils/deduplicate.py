@@ -76,14 +76,19 @@ class Duplication:
             duplicate = cm >= self.threshold
             
             if any(duplicate):
-                indice_duplicates.extend(duplicate.index)
+                indice_duplicates.extend(duplicate.index[duplicate])
 
         return indice_duplicates
 
     def __make_cluster__(self, variable, df_patient, df_pcr, dupli):
 
+        # Crée un cluster de doublon avec la variable en commun
         cluster = df_patient[df_patient[variable] == dupli]
+
+        # Trouve les patients qui ont été tester à partir de la table pcr
         is_tested = cluster.patient_id.isin(df_pcr.patient_id)
+        
+        # Si un a été testé alors 
         if any(is_tested):
             index_tested = is_tested.index[is_tested]
             h_many_id = len(index_tested)

@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def apply_gender(all_gender, threshold=0.7, apply=None):
+def apply_gender(all_gender, threshold=0.7, apply_on=None):
     sexe = {}
     for giv in all_gender:
         name = giv["name"]
@@ -15,9 +15,16 @@ def apply_gender(all_gender, threshold=0.7, apply=None):
         
         sexe[name] = gender
     
-    if apply is not None:
-        assert type(apply) == pd.Series 
-        serie = apply.replace(sexe)
+    if apply_on is not None:
+        serie = apply_on.replace(sexe)
+
+        all_unique_val = serie.unique()
+        verif = ~((all_unique_val == "male") | 
+          (all_unique_val == "female") | 
+          (all_unique_val == None))
+        
+        other_name = {i:None for i in all_unique_val[verif]}
+        serie = serie.replace(other_name)
         return serie
     else : 
         return sexe
@@ -74,6 +81,20 @@ def find_truth_age(age_re, age_es):
     return f_age
 
 
+def match_state(s, p):
+    """
+    Match two values. If one of them is None return the second value. 
+    Else, if they don't match return None.
+    """
+    if s is None:
+        return p
+    elif p is None:
+        return s
+    elif (s == p):
+        return s
+    else:
+        return None
+
 
 def plot_map(data, var, cmap='Blues', size_fig=(14, 8), 
              vminmax=(10, 3000), title='', anno_state=True, 
@@ -86,6 +107,7 @@ def plot_map(data, var, cmap='Blues', size_fig=(14, 8),
     data.plot(var,
               cmap=cmap,
               linewidth=0.8, edgecolor='0.8', ax=ax)
+    
     sm = plt.cm.ScalarMappable(cmap=cmap,
                                norm=plt.Normalize(vmin=vminmax[0], vmax=vminmax[1]))
     cbar = fig.colorbar(sm)
@@ -98,9 +120,10 @@ def plot_map(data, var, cmap='Blues', size_fig=(14, 8),
     if anno_state:
         data.apply(lambda x: ax.annotate(s=x.STATE_CODE,
                                          xy=x.geometry.centroid.coords[0],
-                                         ha='center', size=10, fontweight='bold', color=color_font), axis=1)
+                                         ha='center', size=10, fontweight='bold', 
+                                         color=color_font), axis=1)
     if anno_value:
-        data.apply(lambda x: ax.annotate(s=str(x[var]),
+        data.apply(lambda x: ax.annotate(s=x[var],
                                          xy=(x.geometry.centroid.coords[0][0],
                                              x.geometry.centroid.coords[0][1]-2),
                                          ha='center', size=10, color=color_font), axis=1)

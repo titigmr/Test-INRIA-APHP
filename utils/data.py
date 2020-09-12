@@ -57,15 +57,17 @@ def get_gender(unique_name):
     """
     try :
         get_gender = Genderize().get(unique_name)
-        f = open("gender.json", "w") 
+        fp = os.path.join('extern_data','gender.json')
+        f = open(fp, "w") 
         json.dump(get_gender, f)
         f.close()
         return get_gender
 
     except GenderizeException:
         print("Request limit")
-        if os.path.exists("gender.json"):
-            with open('gender.json') as data_file:
+        fp = os.path.join('extern_data','gender.json')
+        if os.path.exists(fp):
+            with open(fp) as data_file:
                 data_loaded = json.load(data_file)
             return data_loaded
 
