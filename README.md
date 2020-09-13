@@ -1,73 +1,113 @@
 # Exercice d'évaluation pour le poste Inria / AP-HP
 
-L'objectif de ce travail est d'évaluer vos compétences sur une
-mise en situation proche des problématiques de la collaboration
-entre Inria et AP-HP.
+L'objectif de ce repository est de répondre à un exercice de mise en situation pour le poste Inria / AP-HP.
 
-Vous avez accés à un fichier 'data.db' qui est une base de données
-sqlite contenant 2 tables. Une table de patients et une table
-de tests PCR (test utlisé pour le diagnostic du Covid19).
+Nous utiliserons la base de données `data.db` qui contient deux tables : 
+- une table de patients contenant des informations pour chacun d'entre-eux (nom, prénom, age, date de naissance, adresse, code postal, état, etc.) ;
+- une table de tests PCR (test utlisé pour le diagnostic du Covid 19).
 
-Voici un bout de code Python servant à lire les tables avec
-Pandas.
+Ces données sont **synthétiques** et correspondent à la géographie de l'Australie.
 
-```python
+## Dépendances
 
-import pandas as pd
-from sqlalchemy import create_engine
+Ce projet requiert les librairies suivantes (toutes présentes dans l'écosystème PyPi) : 
 
-engine = create_engine('sqlite:///data.db', echo=False)
-con = engine.connect()
-df_patient = pd.read_sql('select * from patient', con=con)
-df_pcr = pd.read_sql('select * from test', con=con)
-con.close()
+- genderize
+- pandas
+- numpy
+- jellyfish
+- fuzzywuzzy
+- python-levenshtein
+- matplotlib
+- descartes
+- geopandas
+
+Il est possible d'installer directement ces dépendances via le fichier `requirements.txt` grâce à la commande suivante :
+
+```bash
+
+pip install -r requirements.txt
+
 ```
 
-L'objectif général de cette mise en situation est de comprendre les
-problèmes de qualités de données. Vous devrez mettre en évidence les
-doublons dans la base patients et estimez le nombre de patients positifs
-au Covid19 (par tranche d'age, par localisation géographique etc.).
+## Mise en qualité des données 
 
-Les données sont synthétiques et correspondent à la géographie
-de l'Australie.
+Le premier jupyter notebook traite des problèmes
+de qualité de données (données incohérentes, données manquantes, et données dupliquées).
 
-## Questions
 
-- Ecrire un notebook jupyter qui met en évidence les problèmes
-de qualité de données (données incohérentes, données manquantes etc.)
+### Données manquantes et incohérentes
 
-- Ecrire une fonction Python `detect_duplicates` qui prend
+La première partie de ce notebook met en évidences la part de valeurs manquantes ainsi que la cohérence de chacune des variables.
+
+Plus précisément, on vérifie les éléments suivants :
+
+- Le pourcentage de valeurs manquantes pour chacune des variables.
+
+- La cohérence entre la date de naissance des patients et l'âge renseigné.
+
+- La cohérence entre le code postal et l'état renseigné.
+
+- Les erreurs de typographie concernant les modaltés de plusieurs variables (`suburb`, `state`, `address`, etc.)
+
+
+### Gestion des données dupliquées
+
+La seconde partie vise à supprimer les doublons. La difficulté réside dans le fait que les doublons ne sont pas identiques. On peut imaginer des problèmes de saisies de données (typos, information manquante etc.).
+
+Pour répondre à cet objectif nous utiliserons la fonction `detect_duplicates` (de la classe `Duplicates`) qui prend
 en parametère le dataframe `df_patient` et qui renvoit
-un nouveau dataframe après suppression des doublons. Vous
-estimerez le pourcentage de données dupliquées. Attention,
-les données dupliquées ne sont pas identiques. Il faut imaginer
-des problèmes de saisies de données (typos, information manquante
-etc.)
+un nouveau dataframe après suppression des doublons. 
 
-- Ecrire une ou plusieurs fonctions de test (eg utilisant https://docs.pytest.org/en/stable/)
-afin de tester la qualité de votre function.
+L'attribut `removed` estime le pourcentage de données dupliquées.
 
-- Faire un notebook jupyter d'analyse exploratoire de données
-(EDA exploratory data analysis). Il est demandé de représenter
-visuellement (graphiques, histogrammes, etc.). Ce notebook
-devra utiliser le dataframe `df_patient` après la déduplication
-utilisant la fonction `detect_duplicates`. Vous ferez
-la jointure entre les dataframes `df_patient` et `df_pcr`
-afin de répresenter et discuter la prévalence de la maladie
+Le procédé de déduplication consiste à : 
+
+- Retenir tous les doublons à partir d'une variable distinguant au mieux un patient (par exemple le numéro de téléphone).
+
+- Choisir un individu de référence (si possible dans la table `pcr`).
+
+- Sélectionner les doublons selon un seuil de ressemblance (nombre d'autres valeurs identiques) et considérer que les valeurs très proches (potentiellement dues à une erreur de typographie) sont identiques.
+
+- Recommencer le procédé pour d'autres variables (nom et prénom, adresse complète, etc.)
+
+- Retirer les données dupliquées et les comptabiliser.
+
+
+## Exploratory Data Analysis (EDA)
+
+Ce second notebook a pour objectif de nettoyer la nouvelle base de données dé-dédupliquée et de produire une analyse exploratoire des données.
+
+### Nettoyage des variables
+
+Les actions suivantes sont effectuées :
+
+- Grâce à la variable `given_name` il est possible d'inférer le genre du patient (homme ou femme).
+
+
+- Création d'une variable tranche d'âge (pour mieux gérer les incohérences entre âge renseigné et date de naissance).
+
+- Retenir les valeurs de la variable `state` seulement lorsqu'elles concordent avec la variable `postcode`.
+
+### Analyse
+
+La dernière étape consiste à la visualiation (carte, histogramme, graphique, etc.) afin de discuter de la prévalence de la maladie
 dans la population.
 
-## Instructions
 
-- Vous avez le droit d'utiliser toutes les librairies présentes
-dans l'écosystème Python/PyData. Ces librairies sont typiquement
-disponibles sur PyPi ou conda forge.
+## Module `utils` et `map`
 
-- Le rendu de votre travail consistera en un repository sur GitHub.
 
-- Le repository GitHub devra contenir un fichier readme.md qui
-détaille le contenu des différents fichiers et les librairies
-à installer pour utiliser votre code.
+Les notebook précédents utilisent les modules `map` et `utils`.
 
-- Il est préférable que le code Python soit écrit en Anglais.
-Les commentaires et l'analyse des résultats dans les notebooks
-devront être en Français.
+- `utils` : ce module contient des sous-modules pour appliquer les étapes de :
+
+    - mise en cohérence des données (`coherence`) ;
+    - d'ajout de données externes (`data`) ;
+    - de visualisation (`eda`)
+    - de déduplication (`deduplicate`)
+    - de lecture des tables (`getting_started`)
+
+- `map`: ce module contient la carte pour l'étape de visualisation.
+
+- `test` : ce module permet de tester la qualité de la fonction `detect_duplicate`.
