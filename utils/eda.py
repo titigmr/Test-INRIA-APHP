@@ -63,7 +63,7 @@ def find_truth_age(age_re, age_es):
         elif (value >= 85) and (value <= 1):
             return '85-110'
         else :
-            return 'extrem'
+            return None
     
 
     g_age_re = group_age(age_re)
@@ -97,35 +97,35 @@ def match_state(s, p):
 
 
 def plot_map(data, var, cmap='Blues', size_fig=(14, 8), 
-             vminmax=(10, 3000), title='', anno_state=True, 
-             anno_value=True, color_font='black'):
+             vminmax=(None,None), title='', anno_state=True, 
+             anno_value=True, color_font='black', ax=None, fig=None, size_colorbar=1):
     """
     Plot map with a geodataframe and one column with values computed for each state.
     """
+    if not all(vminmax):
+        vminmax = (data[var].min(), data[var].max())
+    
+    if ax is None :
+        fig, ax = plt.subplots(figsize=size_fig)
 
-    fig, ax = plt.subplots(figsize=size_fig)
+    sm = plt.cm.ScalarMappable(cmap=cmap, 
+        norm=plt.Normalize(vmin=vminmax[0], vmax=vminmax[1]))
+    cbar = fig.colorbar(sm, ax=ax, shrink=size_colorbar)
+    
     data.plot(var,
               cmap=cmap,
               linewidth=0.8, edgecolor='0.8', ax=ax)
     
-    sm = plt.cm.ScalarMappable(cmap=cmap,
-                               norm=plt.Normalize(vmin=vminmax[0], vmax=vminmax[1]))
-    cbar = fig.colorbar(sm)
-    
-    ax.annotate('Source Map: Commonwealth of Australia',
-                xy=(0.1, .08), xycoords='figure fraction',
-                horizontalalignment='left', verticalalignment='top',
-                fontsize=10, color='#555555')
-    
     if anno_state:
-        data.apply(lambda x: ax.annotate(s=x.STATE_CODE,
-                                         xy=x.geometry.centroid.coords[0],
+        data.apply(lambda x: ax.text(s=x.STATE_CODE,
+                                         x=x.geometry.centroid.coords[0][0],
+                                         y=x.geometry.centroid.coords[0][1]+2,
                                          ha='center', size=10, fontweight='bold', 
                                          color=color_font), axis=1)
     if anno_value:
-        data.apply(lambda x: ax.annotate(s=x[var],
-                                         xy=(x.geometry.centroid.coords[0][0],
-                                             x.geometry.centroid.coords[0][1]-2),
+        data.apply(lambda x: ax.text(s=x[var],
+                                         x=x.geometry.centroid.coords[0][0], 
+                                         y=x.geometry.centroid.coords[0][1],
                                          ha='center', size=10, color=color_font), axis=1)
     ax.axis('off')
     ax.set_title(title)
