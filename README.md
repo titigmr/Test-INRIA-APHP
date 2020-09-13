@@ -95,10 +95,10 @@ La dernière étape consiste à la visualiation (carte, histogramme, graphique, 
 dans la population.
 
 
-## Module `utils` et `map`
+## Aures modules
 
 
-Les notebook précédents utilisent les modules `map` et `utils`.
+Les notebook précédents utilisent les modules `map`, `utils` et `tests`.
 
 - `utils` : ce module contient des sous-modules pour appliquer les étapes de :
 
@@ -110,4 +110,4 @@ Les notebook précédents utilisent les modules `map` et `utils`.
 
 - `map`: ce module contient la carte pour l'étape de visualisation.
 
-- `test` : ce module permet de tester la qualité de la fonction `detect_duplicate`.
+- `tests` : ce module permet de tester la qualité de la fonction `detect_duplicate`.
