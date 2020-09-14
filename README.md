@@ -3,7 +3,7 @@
 L'objectif de ce repository est de répondre à un exercice de mise en situation pour le poste Inria / AP-HP.
 
 Nous utiliserons la base de données `data.db` qui contient deux tables : 
-- une table de patients contenant des informations pour chacun d'entre-eux (nom, prénom, age, date de naissance, adresse, code postal, état, etc.) ;
+- une table de patients contenant des informations pour chacun d'entre eux (nom, prénom, age, date de naissance, adresse, code postal, état, etc.) ;
 - une table de tests PCR (test utlisé pour le diagnostic du Covid 19).
 
 Ces données sont **synthétiques** et correspondent à la géographie de l'Australie.
@@ -38,9 +38,7 @@ de qualité de données (données incohérentes, données manquantes, et donnée
 
 ### Données manquantes et incohérentes
 
-La première partie de ce notebook met en évidences la part de valeurs manquantes ainsi que la cohérence de chacune des variables.
-
-Plus précisément, on vérifie les éléments suivants :
+Plus précisément, cette première partie permet de vérifier les éléments suivants :
 
 - Le pourcentage de valeurs manquantes pour chacune des variables.
 
@@ -55,28 +53,29 @@ Plus précisément, on vérifie les éléments suivants :
 
 La seconde partie vise à supprimer les doublons. La difficulté réside dans le fait que les doublons ne sont pas identiques. On peut imaginer des problèmes de saisies de données (typos, information manquante etc.).
 
-Pour répondre à cet objectif nous utiliserons la fonction `detect_duplicates` (de la classe `Duplicates`) qui prend
-en parametère le dataframe `df_patient` et qui renvoit
+Pour répondre à cet objectif nous utiliserons la fonction `detect_duplicates` (comprise dans le module `utils`) qui prend
+en paramètre le dataframe `df_patient` et qui renvoit
 un nouveau dataframe après suppression des doublons. 
 
 L'attribut `removed` estime le pourcentage de données dupliquées.
 
-Le procédé de déduplication consiste à : 
+Le procédé de dé-duplication consiste à : 
 
 - Retenir tous les doublons à partir d'une variable distinguant au mieux un patient (par exemple le numéro de téléphone).
 
-- Choisir un individu de référence (si possible dans la table `pcr`).
+- Choisir un individu de référence (de préférence dans la table `pcr`).
 
 - Sélectionner les doublons selon un seuil de ressemblance (nombre d'autres valeurs identiques) et considérer que les valeurs très proches (potentiellement dues à une erreur de typographie) sont identiques.
 
+- Retirer les données dupliquées et les comptabiliser.
+
 - Recommencer le procédé pour d'autres variables (nom et prénom, adresse complète, etc.)
 
-- Retirer les données dupliquées et les comptabiliser.
 
 
 ## Exploratory Data Analysis (EDA)
 
-Ce second notebook a pour objectif de nettoyer la nouvelle base de données dé-dédupliquée et de produire une analyse exploratoire des données.
+Le second notebook a pour objectif de nettoyer la nouvelle base de données dé-dédupliquée et de produire une analyse exploratoire des données.
 
 ### Nettoyage des variables
 
@@ -91,11 +90,11 @@ Les actions suivantes sont effectuées :
 
 ### Analyse
 
-La dernière étape consiste à la visualiation (carte, histogramme, graphique, etc.) afin de discuter de la prévalence de la maladie
+La dernière étape consiste à la visualisation (carte, histogramme, graphique, etc.) afin de discuter de la prévalence de la maladie
 dans la population.
 
 
-## Aures modules
+## Autres modules
 
 
 Les notebook précédents utilisent les modules `map`, `utils` et `tests`.

@@ -7,7 +7,7 @@ from typing import Callable
 def convert_to_date(value):
     """
     Convert a float value to a datetime format. 
-    If the date isn't convertible, return the date in string.
+    If the date isn't convertible, return the date in string format.
     """
     if not(np.isnan(value)):
         str_date = str(int(value))
@@ -20,7 +20,7 @@ def convert_to_date(value):
 def calculate_age(date:pd.Series, year:int):
     """
     Calculate the age from the year of a date of birth 
-    pandas serie.
+    pandas series.
     """
     date.fillna(0, inplace=True)
     date = date.apply(lambda x : int(str(int(x))[:4]))
@@ -30,17 +30,17 @@ def calculate_age(date:pd.Series, year:int):
 
 def gestalt_pattern_matching(a: str, b: str):
     """
-    Find similarity between two string 
+    Find similarity between two strings
     using the gestalt pattern matching algorithm.
     """
     return SequenceMatcher(None, a, b).ratio()
 
 
-def find_best_similar_levenstein(serie: pd.Series, dict_ref: dict):
+def find_best_similar_levenshtein(serie: pd.Series, dict_ref: dict):
     """
-    Find the most similar value, with the levenstein distance, between values 
-    in a pandas serie and a dictionary values. 
-    Return a dictionnary where keys are values find in the serie and value is
+    Find the most similar value, with the Levenshtein distance, between values 
+    in a pandas series and a dictionary values. 
+    Return a dictionary where keys are values find in the series and value is
     the most similar match.
     """
     closest_value = {}
@@ -57,12 +57,13 @@ def find_best_similar_levenstein(serie: pd.Series, dict_ref: dict):
 
 def find_best_similar(serie: pd.Series, dict_ref: dict, similarity: Callable, applying=True):
     """
-    Find for each value on a pandas serie the most similar string from a dictionary referential. 
-    This function use a function similarity (jaro-winkler, gestalt pattern matching for example).
+    Find for each value on a pandas series the most similar 
+    string from a dictionary referential.  This function uses a similarity algorithm 
+    (for example jaro-winkler or gestalt pattern matching).
     
     Return 
     ------
-    serie : if apply is True, return the serie with most similar values computed
+    serie : if apply is True, return the series with most similar values computed
     closest_value : if apply is False, return the dictionary of similarity for each value 
     """
     
@@ -92,18 +93,24 @@ def find_best_similar(serie: pd.Series, dict_ref: dict, similarity: Callable, ap
 
 def postcode_coherence(serie: pd.Series, ref_postcode: dict, str_postcode=list(), convert=True):
     """
-    Find the state attributed for each value in a pandas serie.
-    This function use a dictonary where keys is the state, and value is a numpy 
+    Find the state attributed for each value in a pandas series.
+    This function uses a dictionary where keys is the state, and the value is a numpy 
     array with all postcode in this state. The variable str_postcode is the list 
-    of value where postcode is not integers.
+    of values where postcode is not integers.
     """
     def convert_postcode_toint(serie: pd.Series, str_postcode: list):
+        """
+        Convert a string postcode in integer.
+        """
         serie.replace({i:None for i in str_postcode}, inplace=True)
         serie.fillna(0, inplace=True)
         serie = serie.astype(int)
         return serie
 
     def attribute_state(x, ref_postcode: dict):
+        """
+        Compute postcode if this value is in ref_postcode dictionary.
+        """
         for key, value in ref_postcode.items():
             if x in value:
                 return key
@@ -120,9 +127,9 @@ def postcode_coherence(serie: pd.Series, ref_postcode: dict, str_postcode=list()
 
 def correct_typo(serie: pd.Series, confidence=90, threshold=10):
     """
-    Correct typographie errors between values find more than the threshold and 
-    unique values in a pandas serie. The confidence is the ratio of similarity used by 
-    the algorithm of matching (levenshtein distance).
+    Correct typographic errors between values find more than the threshold and 
+    unique values in a pandas series. The confidence is the ratio of similarity used by 
+    the algorithm for matching (levenshtein distance).
     """
     typo_corrected = {}
     indice_lonely = serie.value_counts()[serie.value_counts() == 1].index
@@ -136,16 +143,11 @@ def correct_typo(serie: pd.Series, confidence=90, threshold=10):
     return typo_corrected
 
 
-def apply_coherence(dataframe: pd.DataFrame, table="patient"):
+def clean_pcr(dataframe: pd.DataFrame):
     """
-    Clean dataframe
+    Clean values of pcr dataframe.
     """
-    if table == 'patient':
-        pass
-
-    elif table == 'pcr':
-        dataframe.pcr = dataframe.pcr.replace(
-            {'Negative': 'N', 'Positive': 'P'})
-
-        return dataframe
+    dataframe.pcr = dataframe.pcr.replace(
+        {'Negative': 'N', 'Positive': 'P'})
+    return dataframe
 

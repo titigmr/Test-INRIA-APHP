@@ -7,7 +7,7 @@ import geopandas as gpd
 def get_postcode():
     """
     Return a dictionnary where state of Australia is the key 
-    and the values is all postcode attributed.
+    and values are all postcode attributed.
     """
     return {"NSW": np.concatenate([np.arange(1000, 1999+1),
                                    np.arange(2000, 2599+1),
@@ -37,7 +37,7 @@ def get_postcode():
 def get_states():
     """
     Return a dictionnary where states of Australia are keys 
-    and the values is the code for each state.
+    and values are the code for each state.
     """
     return {"South Australia":"SA",
             "Western Australia": "WA",
@@ -72,6 +72,10 @@ def get_gender(unique_name):
             return data_loaded
 
 def get_map(dict_ref):
+    """
+    Download the map of Australia and return a geopandas dataframe where
+    all states are
+    """
     fp = os.path.join('map','australian-states.json')
     map_df = gpd.read_file(fp)
     map_df["state"] = map_df.STATE_NAME.replace(dict_ref)

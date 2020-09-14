@@ -2,13 +2,13 @@ from jellyfish import jaro_winkler_similarity
 import pandas as pd
 import numpy as np
 
+
 class Duplication:
     """
     Find duplicates values in a Dataframe by using the function detect_duplicates
 
     Parameters
     ----------
-    
     var_threshold : variables for the threshold comparing
     var_similarity : variables for the similarity comparing
     variable_testing : variable for find duplicates
@@ -40,39 +40,74 @@ class Duplication:
 
 
     def detect_duplicates(self, df_patient):
+        """
+        Find all duplicates in a pandas dataframe for each variable testing and 
+        displays the number of duplicates removed.
+
+        Return
+        ------
+        df_patient ; dataframe with duplicates removed.
+
+        """
+
         df_patient_init = df_patient.copy()
 
+
+        # get all unique values duplicated by a variable
         for variable in self.variable_testing:
             all_unique = df_patient[variable][df_patient[variable].duplicated(
                 False)].unique()
 
+            # get index duplicated
             list_dupli = self.__get_indice_duplicated__(
                 df_patient, self.df_pcr, variable, all_unique)
             
+            # remove duplicates values from an input dataframe 
             df_patient = self.__df_deduplicate__(df_patient, list_dupli, variable)
 
+        # remove id duplicated
         if self.remove_dupli_pi:
             index_dupli_pi = df_patient[df_patient.patient_id.duplicated(False)].index
             df_patient = self.__df_deduplicate__(df_patient, index_dupli_pi, 'patient_id')
 
+        # attribute that shows the number of data removed
         self.removed = round(
             1 - (df_patient.shape[0] / df_patient_init.shape[0]), 2)
 
         return df_patient
 
     def __get_indice_duplicated__(self, df_patient, df_pcr, variable, all_dupli):
+        """
+        Find index duplicated values.
+
+        Parameters
+        ----------
+
+        df_patient : dataframe, dataset patient
+        df_pcr : dataframe, dataset pcr
+        variable : str, reference variable to retain duplicates
+        all_dupli : list, all uniques values 
+        """
         indice_duplicates = []
 
         for dupli in all_dupli:
-            all_cluster = {}
-            all_cluster["clus"], all_cluster["ref"] = self.__make_cluster__(
+
+            # create a cluster of duplicates observations according to 
+            # the test variable and return the index of the reference 
+            # observation used for the comparison
+            clus, ref = self.__make_cluster__(
                 variable, df_patient, df_pcr, dupli)
 
-            match = self.__matching_cluster__(
-                all_cluster["clus"], all_cluster["ref"], self.var_similarity)
+            # calculates for each observation of the cluster the pourcentage of matching 
+            # with the reference observation
+            
+            match = self.__matching_cluster__(clus, ref, self.var_similarity)
+            
+
+            # sets a threshold to qualify an observation as duplicate and 
+            # retains those that do not exceed this threshold
             
             cm = self.__calculate_matching__(match, self.var_threshold)
-
             duplicate = cm >= self.threshold
             
             if any(duplicate):
@@ -81,14 +116,36 @@ class Duplication:
         return indice_duplicates
 
     def __make_cluster__(self, variable, df_patient, df_pcr, dupli):
+        """
+        Create a duplicate observation cluster according to a test variable.
 
-        # Crée un cluster de doublon avec la variable en commun
+        Parameters 
+        ----------
+
+        df_patient : dataframe, dataset patient
+        df_pcr : dataframe, dataset pcr
+        variable : str, reference variable to retain duplicates
+        dupli : str or float, one unique value from the list_dupli
+
+        Return 
+        ------
+
+        cluster : dataframe of duplicates
+        ref_index : int, index of the reference observation
+        """
+
         cluster = df_patient[df_patient[variable] == dupli]
 
-        # Trouve les patients qui ont été tester à partir de la table pcr
+        # Find all observations of the cluster that have been tested in the table pcr
+        
         is_tested = cluster.patient_id.isin(df_pcr.patient_id)
         
-        # Si un a été testé alors 
+        # - if one observation is tested : use it as a baseline observation, else
+        # choose the first observation
+        # - if two or more observations are tested : find out if one of the 
+        # patient are postive. Retains the index of the first positive patient, 
+        # if there is one. Else, retains the first observation.
+        
         if any(is_tested):
             index_tested = is_tested.index[is_tested]
             h_many_id = len(index_tested)
@@ -108,11 +165,33 @@ class Duplication:
         return cluster, ref_index
 
     def __matching_cluster__(self, cluster, ref_index, var_similarity):
+        """
+        Calculates for each observation of the cluster the pourcentage of matching 
+        with the reference observation.
+
+        Parameters
+        ----------
+        cluster : cluster : dataframe of duplicates
+        ref_index : ref_index : int, index of the reference observation
+        var_similarity : float, threshold to qualify an observation as duplicate
+
+        Return
+        ------
+        dataframe : return a boolean dataframe  
+
+        """
         matching = list()
 
         for line in cluster.index:
             if not(line == ref_index):
+
                 var_identical = {}
+                
+                # For each of columns of each row (excluding the reference 
+                # index) calculates the similarity between two strings with an 
+                # algorithm (class parameter) for the chosen variables between referent
+                # observation. Else, only compare this values.
+
                 for var in cluster.columns:
                     var_identical["index"] = line
 
@@ -130,19 +209,32 @@ class Duplication:
         return dataframe
 
     def __calculate_matching__(self, match, var_threshold):
+        """
+        Calcule the pourcentage of matching for each observation in cluster 
+        with choosen variables.
+        """
         return match[var_threshold].sum(axis=1) / len(var_threshold)
 
     def __df_deduplicate__(self, df_patient, indice_duplicates, variable):
+        """
+        Remove duplicates of a pandas dataframe with the indices duplicated.
+        """
         list_d = np.array(indice_duplicates)
         print(f"{variable} : {len(indice_duplicates)} lines removed")
         return df_patient.loc[np.setdiff1d(df_patient.index, list_d)]
 
     def __find_positive__(self, index_tested, df_pcr, df_patient):
+        """
+        Find if a patient is positive from a pcr dataframe.
+        """
         is_positive = df_pcr[df_pcr.patient_id.isin(
             df_patient.loc[index_tested].patient_id)].pcr == "P"
         return is_positive
 
     def __get_positive__(self, df_patient, df_pcr, is_positive):
+        """
+        Retains the line of positive patient.
+        """
         return df_patient[
         df_patient.patient_id.isin(
             df_pcr.patient_id[is_positive.index[is_positive]])].index
@@ -150,9 +242,8 @@ class Duplication:
 
 def prepare_patient(df_patient):
     """
-    Prepare dataframe patient : create variable
+    Prepare dataframe patient. This function create :
     localisation, full_address, full_name and born_age.
-
     """
 
     df_patient = df_patient.fillna('')
@@ -175,7 +266,6 @@ def prepare_patient(df_patient):
     df_patient["full_name"] = df_patient["surname"] + " " + df_patient["given_name"]
     
     return df_patient
-
 
 
 def prepare_pcr(df_pcr, positive_pi, not_dupli_pcr):
