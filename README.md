@@ -109,4 +109,5 @@ Les notebook précédents utilisent les modules `map`, `utils` et `tests`.
 
 - `map`: ce module contient la carte pour l'étape de visualisation.
 
-- `tests` : ce module permet de tester la qualité de la fonction `detect_duplicate`.
+- `tests` : ce module permet de tester la qualité de la fonction `detect_duplicate`. On peut lancer le module `pytest`.
+
