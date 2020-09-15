@@ -18,12 +18,8 @@ class Duplication:
     metric : function to compare string (default is Jaro Winkler similarity)
     """
     
-    def __init__(self, variable_testing=None, 
-                var_threshold=None,
-                 df_pcr=None,
-                 var_similarity=None,
-                 confidence=0.8, threshold=0.7,
-                 metric=None, remove_dupli_pi=False):
+    def __init__(self, variable_testing=None, var_threshold=None, df_pcr=None, var_similarity=None, 
+                confidence=0.8, threshold=0.7, metric=None, remove_dupli_pi=False):
 
         self.var_threshold = var_threshold
         self.var_similarity = var_similarity
@@ -33,7 +29,7 @@ class Duplication:
         self.df_pcr = df_pcr
         self.remove_dupli_pi = remove_dupli_pi  
         
-        if metric == None:
+        if metric is None:
             self.metric = jaro_winkler_similarity
         else :
             self.metric = metric
@@ -68,7 +64,6 @@ class Duplication:
             df_patient = self.__df_deduplicate__(df_patient, list_dupli, variable)
 
         # remove duplicates id
-
         if self.remove_dupli_pi:
             if 'patient_id' in df_patient.columns:
                 index_dupli_pi = df_patient[df_patient.patient_id.duplicated(False)].index
@@ -188,8 +183,7 @@ class Duplication:
 
         Return
         ------
-        dataframe : return a boolean dataframe  
-
+        dataframe : return a boolean dataframe
         """
         matching = list()
 
@@ -210,7 +204,7 @@ class Duplication:
 
                         var_identical[var] = self.metric(cluster.loc[line, var],
                                                     cluster.loc[ref_index, var]) > self.confidence
-                        
+
                     else:
                         var_identical[var] = cluster.loc[line, var] == cluster.loc[
                         ref_index, var]
@@ -263,15 +257,15 @@ def prepare_patient(df_patient):
     
     # born and age
     df_patient["born_age"] = df_patient.apply(lambda x: str(
-        x["date_of_birth"]).replace('.0', '').replace('nan','') 
-    + " " + str(x["age"]).replace('.0','').replace('nan',''), axis=1)
+    	x["date_of_birth"]).replace('.0', '').replace('nan','') + " " + str(
+    	x["age"]).replace('.0','').replace('nan',''), axis=1)
     
     # localisation (postcode, suburb and state)
     df_patient.street_number = df_patient.street_number.replace(
         {"": 0}).astype(int).astype(str).replace({"0": ""})
-    df_patient["localisation"] = df_patient.apply(lambda x :
-                     x["postcode"] + " " + x["state"] + " " 
-                     + x["suburb"], axis=1)
+    df_patient["localisation"] = df_patient.apply(lambda x : x["postcode"] + " " + 
+    	x["state"] + " " + x["suburb"], axis=1)
+    
     # full address (number and adress)
     df_patient["full_address"] = df_patient.apply(lambda x : x["street_number"] + " " 
                                                   + x["address_1"], axis=1)

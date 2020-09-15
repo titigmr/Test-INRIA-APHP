@@ -1,7 +1,4 @@
-
-import sys
-sys.path.append("..")
-from utils.deduplicate import Duplication
+from ..utils.deduplicate import Duplication
 import pandas as pd
 
 def test_removed_one():
@@ -14,11 +11,13 @@ def test_removed_one():
 
 
 def test_no_removed():
-    df = pd.DataFrame({'given_name': {1: 'joshua', 2: 'alice', 3: 'sienna', 4: 'joshua', 5: 'ky'},
-                       'surname': {1: 'elrick', 2: 'conboy', 3: 'craswell', 4: 'bastiaans', 5: 'laing'},
-                       'address_1': {1: 'andrea place', 2: 'mountain circuit', 3: 'cumberlegeicrescent', 4: 'lowrie street', 5: 'nyawi place'},
-                       'state': {1: 'nsw', 2: 'nsw', 3: 'wa', 4: 'nsw', 5: 'qld'}})
+    df = pd.DataFrame({'given_name': ['joshua','alice','sienna','joshua','ky'],
+                       'surname': ['elrick','conboy','craswell','bastiaans','laing'],
+                       'address_1': ['andrea place','mountain circuit','cumberlegeicrescent',
+                       'lowrie street','nyawi place'],
+                       'state': ['nsw', 'nsw','wa','nsw','qld']})
 
     dupli = Duplication()
     dupli.detect_duplicates(df)
     assert dupli.removed == 0
+
