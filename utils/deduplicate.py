@@ -18,12 +18,12 @@ class Duplication:
     metric : function to compare string (default is Jaro Winkler similarity)
     """
     
-    def __init__(self, var_threshold: list,
-                 var_similarity: list,
-                 variable_testing: list,
-                 df_pcr: pd.DataFrame,
-                 confidence=0.9, threshold=0.7,
-                 metric=None, remove_dupli_pi=True):
+    def __init__(self, variable_testing=None, 
+                var_threshold=None,
+                 df_pcr=None,
+                 var_similarity=None,
+                 confidence=0.8, threshold=0.7,
+                 metric=None, remove_dupli_pi=False):
 
         self.var_threshold = var_threshold
         self.var_similarity = var_similarity
@@ -52,7 +52,10 @@ class Duplication:
 
         df_patient_init = df_patient.copy()
 
-
+        if self.variable_testing is None:
+            self.variable_testing = df_patient.columns
+        
+        
         # get all unique values duplicated by a variable
         for variable in self.variable_testing:
             all_unique = df_patient[variable][df_patient[variable].duplicated(
@@ -66,9 +69,13 @@ class Duplication:
             df_patient = self.__df_deduplicate__(df_patient, list_dupli, variable)
 
         # remove id duplicated
+
         if self.remove_dupli_pi:
-            index_dupli_pi = df_patient[df_patient.patient_id.duplicated(False)].index
-            df_patient = self.__df_deduplicate__(df_patient, index_dupli_pi, 'patient_id')
+            if 'patient_id' in df_patient.columns:
+                index_dupli_pi = df_patient[df_patient.patient_id.duplicated(False)].index
+                df_patient = self.__df_deduplicate__(df_patient, index_dupli_pi, 'patient_id')
+            else : 
+                print('No patient id column')
 
         # attribute that shows the number of data removed
         self.removed = round(
@@ -101,12 +108,17 @@ class Duplication:
             # calculates for each observation of the cluster the pourcentage of matching 
             # with the reference observation
             
+            if self.var_similarity is None:
+                self.var_similarity = df_patient.columns
+
             match = self.__matching_cluster__(clus, ref, self.var_similarity)
-            
 
             # sets a threshold to qualify an observation as duplicate and 
             # retains those that do not exceed this threshold
             
+            if self.var_threshold is None:
+                self.var_threshold = df_patient.columns
+
             cm = self.__calculate_matching__(match, self.var_threshold)
             duplicate = cm >= self.threshold
             
@@ -137,6 +149,9 @@ class Duplication:
         cluster = df_patient[df_patient[variable] == dupli]
 
         # Find all observations of the cluster that have been tested in the table pcr
+        if df_pcr is None : 
+            ref_index = cluster.index[0]
+            return cluster, ref_index
         
         is_tested = cluster.patient_id.isin(df_pcr.patient_id)
         
@@ -196,8 +211,10 @@ class Duplication:
                     var_identical["index"] = line
 
                     if var in var_similarity:
+
                         var_identical[var] = self.metric(cluster.loc[line, var],
                                                     cluster.loc[ref_index, var]) > self.confidence
+                        
                     else:
                         var_identical[var] = cluster.loc[line, var] == cluster.loc[
                         ref_index, var]
