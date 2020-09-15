@@ -19,8 +19,7 @@ def convert_to_date(value):
 
 def calculate_age(date:pd.Series, year:int):
     """
-    Calculate the age from the year of a date of birth 
-    pandas series.
+    Calculate the age from pandas series of dates of birth.
     """
     date.fillna(0, inplace=True)
     date = date.apply(lambda x : int(str(int(x))[:4]))
@@ -38,9 +37,9 @@ def gestalt_pattern_matching(a: str, b: str):
 
 def find_best_similar_levenshtein(serie: pd.Series, dict_ref: dict):
     """
-    Find the most similar value, with the Levenshtein distance, between values 
+    Find the most similar value, with respect to the Levenshtein distance, between values 
     in a pandas series and a dictionary values. 
-    Return a dictionary where keys are values find in the series and value is
+    Return a dictionary where keys are values found in the series, and dictionary values are
     the most similar match.
     """
     closest_value = {}
@@ -57,13 +56,13 @@ def find_best_similar_levenshtein(serie: pd.Series, dict_ref: dict):
 
 def find_best_similar(serie: pd.Series, dict_ref: dict, similarity: Callable, applying=True):
     """
-    Find for each value on a pandas series the most similar 
-    string from a dictionary referential.  This function uses a similarity algorithm 
+    Find for each value in a pandas series the most similar 
+    string from a dictionary referential. This function uses a similarity algorithm 
     (for example jaro-winkler or gestalt pattern matching).
     
     Return 
     ------
-    serie : if apply is True, return the series with most similar values computed
+    serie : if apply is True, return the series with most similar computed values 
     closest_value : if apply is False, return the dictionary of similarity for each value 
     """
     
@@ -93,14 +92,14 @@ def find_best_similar(serie: pd.Series, dict_ref: dict, similarity: Callable, ap
 
 def postcode_coherence(serie: pd.Series, ref_postcode: dict, str_postcode=list(), convert=True):
     """
-    Find the state attributed for each value in a pandas series.
-    This function uses a dictionary where keys is the state, and the value is a numpy 
-    array with all postcode in this state. The variable str_postcode is the list 
-    of values where postcode is not integers.
+    For each postcode return the corresponding State
+    This function uses a dictionary where keys are the states, and values are a numpy 
+    array with all postcodes in this state. The variable str_postcode is the list 
+    of values where postcode are not integers.
     """
     def convert_postcode_toint(serie: pd.Series, str_postcode: list):
         """
-        Convert a string postcode in integer.
+        Convert a string postcode into integer.
         """
         serie.replace({i:None for i in str_postcode}, inplace=True)
         serie.fillna(0, inplace=True)
@@ -109,7 +108,7 @@ def postcode_coherence(serie: pd.Series, ref_postcode: dict, str_postcode=list()
 
     def attribute_state(x, ref_postcode: dict):
         """
-        Compute postcode if this value is in ref_postcode dictionary.
+        Return postcode if this value is in ref_postcode dictionary.
         """
         for key, value in ref_postcode.items():
             if x in value:
@@ -127,9 +126,9 @@ def postcode_coherence(serie: pd.Series, ref_postcode: dict, str_postcode=list()
 
 def correct_typo(serie: pd.Series, confidence=90, threshold=10):
     """
-    Correct typographic errors between values find more than the threshold and 
-    unique values in a pandas series. The confidence is the ratio of similarity used by 
-    the algorithm for matching (levenshtein distance).
+    Correct typographic errors between values. Corrected values appear only once and are 
+    replaced by other values from serie that appear more than threshold times. 
+    The confidence is the ratio of similarity used by the matching algorithm (levenshtein distance).
     """
     typo_corrected = {}
     indice_lonely = serie.value_counts()[serie.value_counts() == 1].index

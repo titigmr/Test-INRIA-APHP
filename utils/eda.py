@@ -5,14 +5,14 @@ import seaborn as sns
 
 def apply_gender(all_gender, threshold=0.7, apply_on=None):
     """
-    Create a dictionary where the key is the given name 
-    and the value is the gender predicted from the output of genderize API.
+    Create a dictionary where keys are the given name 
+    and the values are the gender predicted by the output of genderize API.
 
     Parameters
     ---------
     all_gender : genderize api return (list of dict)
-    threshold : confidence threshold to retain the gender prediction
-    apply_on : pandas series of given names where gender is applied on
+    threshold : confidence threshold for retaining the gender prediction
+    apply_on : pandas series of names for which gender is predicted
     """
     sexe = {}
     for giv in all_gender:
@@ -62,13 +62,13 @@ def plot_na(pourc_na, df, color=None):
 
 def find_truth_age(age_re, age_es):
     """
-    Get two values and return the group age associated. 
+    Take two values and return the associated group age. 
     If these values are different, return None.
 
     Parameters 
     ----------
 
-    age_re : float, age
+    age_re : float, age informed
     age_es : float, age estimated by year of birth
     """
     
@@ -106,8 +106,8 @@ def find_truth_age(age_re, age_es):
 
 def match_state(s, p):
     """
-    Match two values. If one of them is None return the second value. 
-    Else, if they don't match return None.
+    Match two values. If one of them is None return the second value.  
+    Else return None if they don't match.
 
     Parameters 
     ---------
@@ -128,7 +128,7 @@ def plot_map(data, var, cmap='Blues', size_fig=(14, 8),
              vminmax=(None,None), title='', anno_state=True, 
              anno_value=True, color_font='black', ax=None, fig=None, size_colorbar=1):
     """
-    Plot a map with a geodataframe and one column with values computed for each state.
+    Plot map from a geodataframe containing the values to be ploted.
 
     Parameters 
     ----------
@@ -179,13 +179,13 @@ def plot_bar_PN(df_N, df_P, var, title='',
                 y=0, x=0, figsize=(12,4), 
                 sort=True, print_none=True, ax=None):
     """
-    Plot two bars graph from two dataframes (positive and negative pcr test).
+    Plot two bar graphs from two dataframes (positive and negative pcr test).
 
     Parameters
     ----------
     df_N : pd.Dataframe, dataframe where column pcr is negative
     df_P : pd.Dataframe where column pcr is positive
-    var : str, column selected
+    var : str, selected columns
     sort : bool, sort bar
     print_none : bool, show NA bar
     ax : ax object, default None
@@ -245,16 +245,16 @@ def plot_crosstab(data, size=(12,8), ax=None, title=''):
 
 def plot_dist(df1, df2, size=(12,7), ax=None, bins=50, title="", label=('','')):
     """
-    Plot a distribution plot by age and age estimated.
+    Plot a distribution by age and estimated age.
 
     Parameters
     -----------
     df1 : serie or list, age 
-    df2 : serie or list, age estimated
+    df2 : serie or list, estimated age 
     size : tuple, size of figure
     bins : float, number of bins
     title : str, name of graph
-    ax : ax object, default None. 
+    ax : ax object, default None 
     """
     if ax is None:
         fig, ax = plt.subplots(figsize=size)
@@ -276,7 +276,7 @@ def plot_hist_age(df, ax=None, x=(0,0), y=(0,0), ylabel='', title=''):
     y : tuple, label position of positive bar
     ylabel : str, name of label
     title : str, name of graph
-    ax : ax object, default None. 
+    ax : ax object, default None
     """
     b = (0.45, 0.61, 0.8)
     r = (0.64, 0.2, 0.17)

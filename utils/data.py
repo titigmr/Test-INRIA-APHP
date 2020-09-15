@@ -6,8 +6,7 @@ import geopandas as gpd
 
 def get_postcode():
     """
-    Return a dictionnary where state of Australia is the key 
-    and values are all postcode attributed.
+    Return a dictionnary States as keys and postcodes as values.
     """
     return {"NSW": np.concatenate([np.arange(1000, 1999+1),
                                    np.arange(2000, 2599+1),
@@ -52,8 +51,8 @@ def get_states():
 
 def get_gender(unique_name):
     """
-    Request genderize api to get the gender for each given name in a list.
-    If maximum requests is done, return the last data stored.
+    Request genderize api to get the gender for each name in a list.
+    If maximum number of requests is reached, return the last data stored.
     """
     try :
         get_gender = Genderize().get(unique_name)
@@ -73,8 +72,8 @@ def get_gender(unique_name):
 
 def get_map(dict_ref):
     """
-    Download the map of Australia and return a geopandas dataframe where
-    all states are
+    Download the map of Australia and return a geopandas dataframe with states'
+    GPS coordinates.
     """
     fp = os.path.join('map','australian-states.json')
     map_df = gpd.read_file(fp)
